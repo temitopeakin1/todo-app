@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 interface TodoFormProps {
   task: string;
   date?: string;
@@ -12,24 +14,54 @@ interface TodoFormProps {
 
 const TodoForm: React.FC<TodoFormProps> = ({
   task,
-  date,
-  priority,
+  date = "", 
+  priority = "", 
   onTaskChange,
   onDateChange,
   onPriorityChange,
   onSubmit,
 }) => {
+  const [isTaskValid, setIsTaskValid] = useState(false);
+  const [isDateValid, setIsDateValid] = useState(false);
+  const [isPriorityValid, setIsPriorityValid] = useState(false);
+
+  useEffect(() => {
+    setIsTaskValid(task.trim().length > 0);
+    setIsDateValid(date.trim().length > 0);
+    setIsPriorityValid(priority.trim().length > 0);
+  }, [task, date, priority]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isTaskValid) {
+      window.alert("Task is empty!");
+      return;
+    }
+    if (!isDateValid) {
+      window.alert("Date is not selected!");
+      return;
+    }
+    if (!isPriorityValid) {
+      window.alert("Priority is not selected!");
+      return;
+    }
+
+    onSubmit(e);
+  };
+
   return (
+    <div className=" items-center justify-center">
     <form
-      onSubmit={onSubmit}
-      className="items-center justify-center border border-[#f2f2f2] shadow-md rounded-lg p-2 bg-white"
+      onSubmit={handleSubmit}
+      className="max-w-xl items-center justify-center border border-[#f2f2f2] shadow-md rounded-lg p-2 bg-white"
     >
       <div className="flex flex-col mb-4">
         <input
           type="date"
           value={date}
           onChange={(e) => onDateChange(e.target.value)}
-          className="text-base text-12 p-3 border border-[#f2f2f2] rounded-md font-normal"
+          className="w-full text-base text-12 p-3 border border-[#f2f2f2] rounded-md font-normal"
         />
       </div>
       <div className="flex flex-col mb-4">
@@ -44,7 +76,7 @@ const TodoForm: React.FC<TodoFormProps> = ({
       </div>
       <div className="flex flex-col mb-4">
         <select
-          value={priority || ""}
+          value={priority}
           onChange={(e) => onPriorityChange(e.target.value)}
           className="text-base text-12 p-3 mt-1 border border-[#f2f2f2] rounded-md font-normal"
         >
@@ -56,11 +88,17 @@ const TodoForm: React.FC<TodoFormProps> = ({
       </div>
       <button
         type="submit"
-        className="w-full text-base text-14 p-3 bg-add text-white rounded-md"
+        disabled={!isTaskValid || !isDateValid || !isPriorityValid}
+        className={`w-full text-base text-14 p-3 rounded-md ${
+          !isTaskValid || !isDateValid || !isPriorityValid
+            ? "bg-grey text-gray-500 cursor-not-allowed"
+            : "bg-add text-white"
+        }`}
       >
         Add Todo
       </button>
     </form>
+    </div>
   );
 };
 

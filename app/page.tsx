@@ -24,16 +24,22 @@ export default function Home() {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
 
+  // logic to add task
   const addTask = (todo: {
     task: string;
     date?: string;
     priority?: string;
   }) => {
     const id = Math.floor(Math.random() * 1000) + 1;
-    const newTodo: Todo = { id, ...todo, date: formatDate(new Date()) };
+    const newTodo: Todo = {
+      id,
+      ...todo,
+      date: todo.date ? formatDate(new Date(todo.date)) : formatDate(new Date()),
+    };
     setTodos([...todos, newTodo]);
   };
 
+  // logic to update a task
   const updateTask = (updatedTodo: {
     task: string;
     date?: string;
@@ -41,7 +47,7 @@ export default function Home() {
   }) => {
     if (editTodo) {
       const updatedTodos = todos.map((todo) =>
-        todo.id === editTodo.id ? { ...todo, ...updatedTodo } : todo
+        todo.id === editTodo.id ? { ...todo, ...updatedTodo, date: updatedTodo.date ? formatDate(new Date(updatedTodo.date)) : todo.date } : todo
       );
       setTodos(updatedTodos);
       setEditTodo(null);
@@ -49,6 +55,7 @@ export default function Home() {
     setShowAddTodo(false);
   };
 
+  // logic to delete a todo task
   const deleteItem = (id: number) => {
     setTodos(todos.filter((todo) => todo.id !== id));
   };
@@ -69,15 +76,39 @@ export default function Home() {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
-  // format date
+  const getDaySuffix = (day: number) => {
+    if (day > 3 && day < 21) return "th"; 
+    switch (day % 10) {
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
+    }
+  };
+
+  // Format date to "Monday, 12th May"
   const formatDate = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+      weekday: "long", 
+      day: "numeric", 
+      month: "long", 
     };
-    return date.toLocaleDateString("en-US", options);
+
+    const day = date.getDate(); // Get day of the month (1-31)
+    const suffix = getDaySuffix(day); // Get the appropriate suffix for the day (st, nd, rd, th)
+
+    // Use Intl.DateTimeFormat for the weekday and month, and manually add the day with its suffix
+    const formattedDate = `${date.toLocaleDateString("en-US", {
+      weekday: "long",
+    })}, ${day}${suffix} ${date.toLocaleDateString("en-US", {
+      month: "short",
+    })}`;
+
+    return formattedDate;
   };
 
   // Group tasks by date
@@ -112,7 +143,7 @@ export default function Home() {
         <div className="flex-grow">
           {Object.keys(groupedTodos).length > 0 ? (
             Object.entries(groupedTodos).map(([date, tasks]) => (
-              <div key={date} className="-mb-8 mt-2 pt-8">
+              <div key={date} className="-mb-8 -mt-8 pt-8">
                 <div className="text-[16.37px] pb-2.5 text-add font-serif">
                   {date}
                 </div>
