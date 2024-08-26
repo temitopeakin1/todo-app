@@ -1,42 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import TodoForm from "./TodoForm";
 
 interface AddTodoProps {
-  onAdd: (todo: { text: string }) => void;
+  onAdd: (todo: { task: string; date?: string; priority?: string }) => void;
+  onUpdate?: (todo: { task: string; date?: string; priority?: string }) => void;
+  todo?: { task: string; date?: string; priority?: string };
+  onCancel: () => void;
 }
 
-export default function AddTodo({ onAdd }: AddTodoProps) {
-  const [text, setText] = useState("");
+const AddTodo: React.FC<AddTodoProps> = ({
+  onAdd,
+  onUpdate,
+  todo,
+  onCancel,
+}) => {
+  const [task, setTask] = useState(todo?.task || "");
+  const [date, setDate] = useState(todo?.date || "");
+  const [priority, setPriority] = useState(todo?.priority || "");
 
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!text) {
-      alert("Please add a task");
-      return;
+  useEffect(() => {
+    if (todo) {
+      setTask(todo.task);
+      setDate(todo.date || "");
+      setPriority(todo.priority || "");
     }
+  }, [todo]);
 
-    onAdd({ text });
-
-    setText("");
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = { task, date, priority };
+    if (todo && onUpdate) {
+      onUpdate(formData);
+    } else {
+      onAdd(formData);
+    }
+    setTask("");
+    setDate("");
+    setPriority("");
   };
 
   return (
-    <form onSubmit={onSubmit} className="flex items-center space-x-4 mb-4">
-      <input
-        type="text"
-        placeholder="Add a new task"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        className="flex-grow p-2 border rounded-md"
+    <div className="p-4 rounded-md">
+      <TodoForm
+        task={task}
+        date={date}
+        priority={priority}
+        onTaskChange={setTask}
+        onDateChange={setDate}
+        onPriorityChange={setPriority}
+        onSubmit={handleSubmit}
       />
-      <button
-        type="submit"
-        className="bg-primary text-white p-2 rounded-md"
-      >
-        Add Task
-      </button>
-    </form>
+    </div>
   );
-}
+};
+
+export default AddTodo;
