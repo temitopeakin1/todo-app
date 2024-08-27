@@ -26,7 +26,6 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Check authentication and session
       const userSession = sessionStorage.getItem("user");
       if (!user || !userSession) {
         router.push("/signup");
