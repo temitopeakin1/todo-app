@@ -19,54 +19,56 @@ interface Todo {
 export default function Home() {
   const [user] = useAuthState(auth);
   const router = useRouter();
-  const userSession = sessionStorage.getItem("user");
-  if (!user || !userSession) {
-    router.push("/signup");
-  }
-
   const [showAddTodo, setShowAddTodo] = useState(false);
-  const [todos, setTodos] = useState<Todo[]>(() => {
-    const saved = localStorage.getItem("todos");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [editTodo, setEditTodo] = useState<Todo | null>(null);
+  const [loading, setLoading] = useState(true); // Add a loading state
 
   useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
+    if (typeof window !== "undefined") {
+      // Check authentication and session
+      const userSession = sessionStorage.getItem("user");
+      if (!user || !userSession) {
+        router.push("/signup");
+      }
+
+      // Load todos from localStorage
+      const savedTodos = localStorage.getItem("todos");
+      if (savedTodos) {
+        setTodos(JSON.parse(savedTodos));
+      }
+
+      setLoading(false); 
+    }
+  }, [user, router]);
+
+  useEffect(() => {
+    if (!loading) {
+      // Save todos to localStorage
+      localStorage.setItem("todos", JSON.stringify(todos));
+    }
+  }, [todos, loading]);
 
   // logic to add task
-  const addTask = (todo: {
-    task: string;
-    date?: string;
-    priority?: string;
-  }) => {
+  const addTask = (todo: { task: string; date?: string; priority?: string }) => {
     const id = Math.floor(Math.random() * 1000) + 1;
     const newTodo: Todo = {
       id,
       ...todo,
-      date: todo.date
-        ? formatDate(new Date(todo.date))
-        : formatDate(new Date()),
+      date: todo.date ? formatDate(new Date(todo.date)) : formatDate(new Date()),
     };
     setTodos([...todos, newTodo]);
   };
 
   // logic to update a task
-  const updateTask = (updatedTodo: {
-    task: string;
-    date?: string;
-    priority?: string;
-  }) => {
+  const updateTask = (updatedTodo: { task: string; date?: string; priority?: string }) => {
     if (editTodo) {
       const updatedTodos = todos.map((todo) =>
         todo.id === editTodo.id
           ? {
               ...todo,
               ...updatedTodo,
-              date: updatedTodo.date
-                ? formatDate(new Date(updatedTodo.date))
-                : todo.date,
+              date: updatedTodo.date ? formatDate(new Date(updatedTodo.date)) : todo.date,
             }
           : todo
       );
@@ -111,24 +113,10 @@ export default function Home() {
     }
   };
 
-  // Format date to "Monday, 12th May"
   const formatDate = (date: Date) => {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    };
-
-    const day = date.getDate(); 
+    const day = date.getDate();
     const suffix = getDaySuffix(day);
-
-    // Use Intl.DateTimeFormat for the weekday and month, and manually add the day with its suffix
-    const formattedDate = `${date.toLocaleDateString("en-US", {
-      weekday: "long",
-    })}, ${day}${suffix} ${date.toLocaleDateString("en-US", {
-      month: "short",
-    })}`;
-
+    const formattedDate = `${date.toLocaleDateString("en-US", { weekday: "long" })}, ${day}${suffix} ${date.toLocaleDateString("en-US", { month: "short" })}`;
     return formattedDate;
   };
 
