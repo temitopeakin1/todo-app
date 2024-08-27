@@ -22,7 +22,7 @@ export default function Home() {
   const [showAddTodo, setShowAddTodo] = useState(false);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [editTodo, setEditTodo] = useState<Todo | null>(null);
-  const [loading, setLoading] = useState(true); // Add a loading state
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -31,7 +31,6 @@ export default function Home() {
         router.push("/signup");
       }
 
-      // Load todos from localStorage
       const savedTodos = localStorage.getItem("todos");
       if (savedTodos) {
         setTodos(JSON.parse(savedTodos));
@@ -43,7 +42,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!loading) {
-      // Save todos to localStorage
       localStorage.setItem("todos", JSON.stringify(todos));
     }
   }, [todos, loading]);
