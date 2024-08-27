@@ -22,7 +22,10 @@ const config: Config = {
         background: "#FFFFFF",
         grey: "#D8D5D5",
         button:"#F3F9FA",
-        add: "#E53170"
+        add: "#E53170",
+        high:"#571032",
+        medium:"#B07289",
+        priority: "#FCEEF5"
         
       },
       fontWeight: {

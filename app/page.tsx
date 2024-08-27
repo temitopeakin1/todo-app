@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { IoIosAddCircle } from "react-icons/io";
 import AddTodo from "./components/AddTodo";
 import { GoTrash, GoPencil } from "react-icons/go";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "@/app/utils/config";
+import { useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
 
 interface Todo {
   id: number;
@@ -13,6 +17,13 @@ interface Todo {
 }
 
 export default function Home() {
+  const [user] = useAuthState(auth);
+  const router = useRouter();
+  const userSession = sessionStorage.getItem("user");
+  if (!user || !userSession) {
+    router.push("/signup");
+  }
+
   const [showAddTodo, setShowAddTodo] = useState(false);
   const [todos, setTodos] = useState<Todo[]>(() => {
     const saved = localStorage.getItem("todos");
@@ -34,7 +45,9 @@ export default function Home() {
     const newTodo: Todo = {
       id,
       ...todo,
-      date: todo.date ? formatDate(new Date(todo.date)) : formatDate(new Date()),
+      date: todo.date
+        ? formatDate(new Date(todo.date))
+        : formatDate(new Date()),
     };
     setTodos([...todos, newTodo]);
   };
@@ -47,7 +60,15 @@ export default function Home() {
   }) => {
     if (editTodo) {
       const updatedTodos = todos.map((todo) =>
-        todo.id === editTodo.id ? { ...todo, ...updatedTodo, date: updatedTodo.date ? formatDate(new Date(updatedTodo.date)) : todo.date } : todo
+        todo.id === editTodo.id
+          ? {
+              ...todo,
+              ...updatedTodo,
+              date: updatedTodo.date
+                ? formatDate(new Date(updatedTodo.date))
+                : todo.date,
+            }
+          : todo
       );
       setTodos(updatedTodos);
       setEditTodo(null);
@@ -77,7 +98,7 @@ export default function Home() {
   };
 
   const getDaySuffix = (day: number) => {
-    if (day > 3 && day < 21) return "th"; 
+    if (day > 3 && day < 21) return "th";
     switch (day % 10) {
       case 1:
         return "st";
@@ -93,13 +114,13 @@ export default function Home() {
   // Format date to "Monday, 12th May"
   const formatDate = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
-      weekday: "long", 
-      day: "numeric", 
-      month: "long", 
+      weekday: "long",
+      day: "numeric",
+      month: "long",
     };
 
-    const day = date.getDate(); // Get day of the month (1-31)
-    const suffix = getDaySuffix(day); // Get the appropriate suffix for the day (st, nd, rd, th)
+    const day = date.getDate(); 
+    const suffix = getDaySuffix(day);
 
     // Use Intl.DateTimeFormat for the weekday and month, and manually add the day with its suffix
     const formattedDate = `${date.toLocaleDateString("en-US", {
@@ -127,6 +148,15 @@ export default function Home() {
 
   return (
     <main className="flex flex-col min-h-screen items-center justify-between p-16 bg-grey">
+      <button
+        className="text-14 -mt-8 mb-4"
+        onClick={() => {
+          signOut(auth);
+          sessionStorage.removeItem("user");
+        }}
+      >
+        Logout
+      </button>
       <div className="flex flex-col font-bold bg-background w-[350px] md:w-[421px] h-auto p-4 md:p-8 rounded-xl text-[28.7px]">
         <div className="text-left my-6">To Do List</div>
 
@@ -172,13 +202,11 @@ export default function Home() {
                       {/* Priority below the task */}
                       {todo.priority && (
                         <div
-                          className={`text-[11.69px] ${
-                            todo.priority === "high"
-                              ? "text-add"
-                              : todo.priority === "medium"
-                              ? "text-blue-600"
-                              : todo.priority === "low"
-                              ? "text-green-600"
+                          className={`text-[11.69px] p-2 rounded-md ${
+                            todo.priority.toLowerCase() === "high"
+                              ? "text-high bg-priority w-10 h-6.5 "
+                              : todo.priority.toLowerCase() === "medium"
+                              ? "text-medium bg-priority w-16 h-6.3 "
                               : ""
                           }`}
                         >

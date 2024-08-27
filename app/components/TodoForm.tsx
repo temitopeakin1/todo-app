@@ -51,10 +51,10 @@ const TodoForm: React.FC<TodoFormProps> = ({
   };
 
   return (
-    <div className=" items-center justify-center">
+    <div className="items-center justify-center">
     <form
       onSubmit={handleSubmit}
-      className="max-w-xl items-center justify-center border border-[#f2f2f2] shadow-md rounded-lg p-2 bg-white"
+      className="items-center justify-center border border-[#f2f2f2] shadow-md rounded-lg p-2 bg-white"
     >
       <div className="flex flex-col mb-4">
         <input
@@ -83,7 +83,6 @@ const TodoForm: React.FC<TodoFormProps> = ({
           <option value="">Select Priority</option>
           <option value="High">High</option>
           <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
         </select>
       </div>
       <button

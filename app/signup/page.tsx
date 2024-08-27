@@ -54,13 +54,16 @@ const SignUp = () => {
         });
       }
       console.log("User signed up:", userCredential);
+      sessionStorage.setItem("user", "true");
+      router.push("/login");
+      
     } catch (error: any) {
       setErrors({ ...errors, general: error.message });
       console.error("Sign up error:", error);
     } finally {
       setLoading(false);
-      router.push("/login");
     }
+    
   };
 
   const [createUserWithEmailAndPassword] =
